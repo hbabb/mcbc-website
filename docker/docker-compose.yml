@@ -1,0 +1,42 @@
+# docker/docker-compose.yml
+
+services:
+  frontend:
+    build:
+      context: ../frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+      - strapi
+
+  backend:
+    build:
+      context: ../backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ../backend:/app
+      - /app/node_modules
+
+  strapi:
+    build:
+      context: ../strapi
+    ports:
+      - "1337:1337"
+    volumes:
+      - ../strapi:/app
+      - /app/node_modules
+    environment:
+      DATABASE_CLIENT: sqlite
+      DATABASE_FILENAME: /app/data/data.db
+      DATABASE_CONNECTION_LIMIT: 10
+      DATABASE_DEBUG: 'false'
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

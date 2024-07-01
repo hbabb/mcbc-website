@@ -1,5 +1,3 @@
-# strapi/Dockerfile
-
 # Use an official node image as a parent image
 FROM node:20-alpine
 
@@ -17,6 +15,15 @@ RUN pnpm install
 
 # Copy the rest of the application code
 COPY . .
+
+# Set environment variable
+ENV NODE_ENV=development
+
+# Build the Strapi application
+RUN pnpm build
+
+# Ensure build directory exists (if needed for Strapi)
+RUN mkdir -p /app/build
 
 # Expose the port the app runs on
 EXPOSE 1337

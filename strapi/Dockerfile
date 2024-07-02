@@ -1,32 +1,19 @@
-# Use an official node image as a parent image
 FROM node:20-alpine
+# Installing libvips-dev for sharp Compatibility
+RUN apk update && apk add --no-cache build-base gcc autoconf automake zlib-dev libpng-dev nasm bash vips-dev git
+ARG NODE_ENV=development
+ENV NODE_ENV=${NODE_ENV}
 
-# Set the working directory
-WORKDIR /app
+WORKDIR /opt/
+COPY package.json yarn.lock ./
+RUN yarn global add node-gyp
+RUN yarn config set network-timeout 600000 -g && yarn install
+ENV PATH /opt/node_modules/.bin:$PATH
 
-# Copy package.json and pnpm-lock.yaml
-COPY package.json pnpm-lock.yaml ./
-
-# Install pnpm
-RUN npm install -g pnpm
-
-# Install dependencies
-RUN pnpm install
-
-# Copy the rest of the application code
+WORKDIR /opt/app
 COPY . .
-
-# Set environment variable
-ENV NODE_ENV=development
-
-# Build the Strapi application
-RUN pnpm build
-
-# Ensure build directory exists (if needed for Strapi)
-RUN mkdir -p /app/build
-
-# Expose the port the app runs on
+RUN chown -R node:node /opt/app
+USER node
+RUN ["yarn", "build"]
 EXPOSE 1337
-
-# Start the application
-CMD ["pnpm", "start"]
+CMD ["yarn", "develop"]
